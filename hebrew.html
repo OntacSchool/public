@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RTL/LTR Editor with Caret Control</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
+    }
+    .toolbar {
+      margin-bottom: 1rem;
+    }
+    .toolbar button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .editor {
+      width: 100%;
+      min-height: 250px;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      outline: none;
+      font-size: 1rem;
+    }
+    /* RTL: text flows right-to-left and aligns to the right */
+    .rtl {
+      direction: rtl;
+      text-align: right;
+    }
+    /* LTR: text flows left-to-right and aligns to the left */
+    .ltr {
+      direction: ltr;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button id="toggleBtn">Switch to LTR (English)</button>
+  </div>
+  <!-- Start in RTL mode -->
+  <div id="editor" class="editor rtl" contenteditable="true">
+    כאן תוכלו לכתוב בעברית או בערבית...
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggleBtn');
+    const editor = document.getElementById('editor');
+    let isRTL = true;
+
+    // Function to set the caret to the logical start (index 0) of the editor.
+    // In RTL mode, the logical start is visually on the right.
+    function setCaretToStart() {
+      const range = document.createRange();
+      const sel = window.getSelection();
+      // If there's a text node, position at its beginning
+      if (editor.firstChild && editor.firstChild.nodeType === Node.TEXT_NODE) {
+        range.setStart(editor.firstChild, 0);
+      } else {
+        // Fallback if there are no text nodes
+        range.setStart(editor, 0);
+      }
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
+    // Listen for input events in the editor.
+    // When in RTL mode, reposition the caret after each input so that new characters are inserted at the start.
+    editor.addEventListener('input', () => {
+      if (isRTL) {
+        setCaretToStart();
+      }
+    });
+
+    // Toggle button to switch between RTL and LTR modes.
+    toggleBtn.addEventListener('click', () => {
+      if (isRTL) {
+        // Switch to LTR
+        editor.classList.remove('rtl');
+        editor.classList.add('ltr');
+        toggleBtn.textContent = "Switch to RTL (Hebrew/Arabic)";
+      } else {
+        // Switch back to RTL and reposition caret
+        editor.classList.remove('ltr');
+        editor.classList.add('rtl');
+        toggleBtn.textContent = "Switch to LTR (English)";
+        setCaretToStart();
+      }
+      isRTL = !isRTL;
+      editor.focus();
+    });
+
+    // On page load, if in RTL mode, ensure the caret is correctly placed.
+    window.addEventListener('load', () => {
+      if (isRTL) {
+        editor.focus();
+        setCaretToStart();
+      }
+    });
+  </script>
+</body>
+</html>
